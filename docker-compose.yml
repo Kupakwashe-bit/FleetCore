@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  # Primary Database
+  motalink_db:
+    image: postgres:16-alpine
+    container_name: motalink_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: motalink
+      POSTGRES_PASSWORD: motalink_pass_2026
+      POSTGRES_DB: motalink_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backups:/backups
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U motalink -d motalink_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Next.js Application Server
+  motalink_app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: motalink_web
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: "postgresql://motalink:motalink_pass_2026@motalink_db:5432/motalink_db?schema=public"
+      NEXTAUTH_SECRET: "motalink_super_secret_jwt_key_zimbabwe_2026_production"
+      NEXTAUTH_URL: "http://localhost:3000"
+      NODE_ENV: "production"
+    depends_on:
+      motalink_db:
+        condition: service_healthy
+
+volumes:
+  postgres_data:

@@ -1,0 +1,346 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Role {
+  ADMIN
+  FLEET_MANAGER
+  DISPATCHER
+  DRIVER
+  AUDITOR
+}
+
+enum VehicleCategory {
+  TRICYCLE
+  BUS_TAXI
+  SMALL_VEHICLE
+  LORRY
+  HAULAGE_TRUCK
+}
+
+enum FuelType {
+  DIESEL
+  PETROL
+  ELECTRIC
+  HYBRID
+}
+
+enum VehicleStatus {
+  ACTIVE
+  MAINTENANCE
+  DISPATCHED
+  DECOMMISSIONED
+  RESOLD
+}
+
+enum DriverStatus {
+  AVAILABLE
+  ON_TRIP
+  ON_LEAVE
+  SUSPENDED
+}
+
+enum TripStatus {
+  SCHEDULED
+  EN_ROUTE
+  COMPLETED
+  CANCELLED
+}
+
+enum ServiceType {
+  PREVENTIVE
+  REPAIR
+  INSPECTION
+  BREAKDOWN_REPAIR
+}
+
+enum DocType {
+  ZINARA_LICENSE
+  VID_INSPECTION
+  INSURANCE_POLICY
+  RADIO_LICENSE
+  ROUTE_PERMIT
+  COF_CERTIFICATE
+}
+
+enum DocStatus {
+  VALID
+  EXPIRING_SOON
+  EXPIRED
+}
+
+enum IncidentType {
+  ACCIDENT
+  BREAKDOWN
+  CARGO_DAMAGE
+  FUEL_THEFT_SUSPECTED
+  MEDICAL
+}
+
+enum IncidentSeverity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum IncidentStatus {
+  REPORTED
+  UNDER_INVESTIGATION
+  RESCUE_DISPATCHED
+  RESOLVED
+}
+
+enum AnomalyType {
+  EXCESS_FUEL_CONSUMPTION
+  ODOMETER_MISMATCH
+  SUSPICIOUS_ROUTE
+  OFF_HOURS_MOVEMENT
+}
+
+enum AnomalyStatus {
+  PENDING_REVIEW
+  INVESTIGATED_VALIDATED
+  FALSE_POSITIVE
+  RESOLVED
+}
+
+model Depot {
+  id           String    @id @default(uuid())
+  code         String    @unique
+  name         String
+  city         String
+  address      String
+  contactPhone String
+  createdAt    DateTime  @default(now())
+  users        User[]
+  vehicles     Vehicle[]
+  drivers      Driver[]
+  trips        Trip[]    @relation("OriginDepot")
+}
+
+model User {
+  id           String     @id @default(uuid())
+  name         String
+  email        String     @unique
+  passwordHash String
+  role         Role       @default(DRIVER)
+  depotId      String?
+  depot        Depot?     @relation(fields: [depotId], references: [id])
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  driverProfile Driver?
+  dispatchedTrips Trip[]  @relation("DispatcherUser")
+  decommissionedVehicles Vehicle[] @relation("DecommissionedByUser")
+  reviewedFraudAlerts FraudAlert[] @relation("FraudReviewer")
+}
+
+model Vehicle {
+  id                    String          @id @default(uuid())
+  vin                   String          @unique
+  registrationNumber    String          @unique
+  category              VehicleCategory
+  make                  String
+  model                 String
+  year                  Int
+  payloadCapacityKg     Float           @default(0)
+  passengerCapacity     Int             @default(0)
+  fuelType              FuelType        @default(DIESEL)
+  odometerKm            Float           @default(0)
+  status                VehicleStatus   @default(ACTIVE)
+  depotId               String
+  depot                 Depot           @relation(fields: [depotId], references: [id])
+  
+  // Decommission & Resale Fields (Preserves historical record)
+  decommissionDate      DateTime?
+  decommissionReason    String?
+  resalePriceUSD        Float?
+  buyerName             String?
+  decommissionNotes     String?
+  decommissionedByUserId String?
+  decommissionedByUser  User?           @relation("DecommissionedByUser", fields: [decommissionedByUserId], references: [id])
+
+  createdAt             DateTime        @default(now())
+  updatedAt             DateTime        @updatedAt
+
+  trips                 Trip[]
+  serviceRecords        ServiceRecord[]
+  complianceDocs        ComplianceDoc[]
+  incidents             Incident[]      @relation("IncidentVehicle")
+  rescueIncidents       Incident[]      @relation("RescueVehicle")
+  fraudAlerts           FraudAlert[]
+}
+
+model Driver {
+  id                 String       @id @default(uuid())
+  userId             String       @unique
+  user               User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  licenseNumber      String       @unique
+  licenseClasses     String       // e.g. "Class 1 Heavy, Class 2 Bus"
+  licenseExpiry      DateTime
+  medicalCertExpiry  DateTime
+  status             DriverStatus @default(AVAILABLE)
+  depotId            String
+  depot              Depot        @relation(fields: [depotId], references: [id])
+  safetyRating       Float        @default(5.0)
+  efficiencyRating   Float        @default(5.0)
+  punctualityRating  Float        @default(5.0)
+  
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
+
+  trips              Trip[]
+  locationPings      LocationPing[]
+  complianceDocs     ComplianceDoc[]
+  incidents          Incident[]
+  fraudAlerts        FraudAlert[]
+}
+
+model Trip {
+  id                 String       @id @default(uuid())
+  tripCode           String       @unique
+  originDepotId      String
+  originDepot        Depot        @relation("OriginDepot", fields: [originDepotId], references: [id])
+  destinationName    String
+  destinationCoords  String?
+  cargoDescription   String
+  cargoWeightKg      Float        @default(0)
+  passengerCount     Int          @default(0)
+  status             TripStatus   @default(SCHEDULED)
+  scheduledStart     DateTime
+  actualStart        DateTime?
+  actualEnd          DateTime?
+  
+  vehicleId          String
+  vehicle            Vehicle      @relation(fields: [vehicleId], references: [id])
+  driverId           String
+  driver             Driver       @relation(fields: [driverId], references: [id])
+  dispatcherUserId   String
+  dispatcherUser     User         @relation("DispatcherUser", fields: [dispatcherUserId], references: [id])
+  
+  startOdometerKm    Float        @default(0)
+  endOdometerKm      Float?
+  startFuelLevelL    Float        @default(0)
+  endFuelLevelL      Float?
+  fuelAddedL         Float        @default(0)
+  fuelCostUSD        Float        @default(0)
+  
+  syncUuid           String?      @unique
+  isOfflineSubmitted Boolean      @default(false)
+  
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
+
+  locationPings      LocationPing[]
+  incidents          Incident[]
+  fraudAlerts        FraudAlert[]
+}
+
+model LocationPing {
+  id                String   @id @default(uuid())
+  tripId            String
+  trip              Trip     @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  driverId          String
+  driver            Driver   @relation(fields: [driverId], references: [id])
+  latitude          Float
+  longitude         Float
+  speedKmh          Float    @default(0)
+  timestamp         DateTime @default(now())
+  isOfflineCaptured Boolean  @default(false)
+}
+
+model ServiceRecord {
+  id                String      @id @default(uuid())
+  vehicleId         String
+  vehicle           Vehicle     @relation(fields: [vehicleId], references: [id])
+  serviceType       ServiceType @default(PREVENTIVE)
+  description       String
+  costUSD           Float       @default(0)
+  odometerAtService Float
+  partsReplaced     String?     // e.g. "Brake Pads, Oil Filter, Fuel Injectors"
+  serviceDate       DateTime
+  vendorName        String
+  nextServiceDueKm  Float?
+  nextServiceDueDate DateTime?
+  createdAt         DateTime    @default(now())
+}
+
+model ComplianceDoc {
+  id               String    @id @default(uuid())
+  vehicleId        String?
+  vehicle          Vehicle?  @relation(fields: [vehicleId], references: [id])
+  driverId         String?
+  driver           Driver?   @relation(fields: [driverId], references: [id])
+  docType          DocType
+  documentNumber   String
+  issuingAuthority String    // e.g. "ZINARA", "VID Harare", "Old Mutual Insurance"
+  issueDate        DateTime
+  expiryDate       DateTime
+  status           DocStatus @default(VALID)
+  costUSD          Float     @default(0)
+  notes            String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+}
+
+model Incident {
+  id                  String           @id @default(uuid())
+  tripId              String?
+  trip                Trip?            @relation(fields: [tripId], references: [id])
+  vehicleId           String
+  vehicle             Vehicle          @relation("IncidentVehicle", fields: [vehicleId], references: [id])
+  driverId            String
+  driver              Driver           @relation(fields: [driverId], references: [id])
+  incidentType        IncidentType
+  severity            IncidentSeverity @default(MEDIUM)
+  locationName        String
+  description         String
+  reportedAt          DateTime         @default(now())
+  ownershipChainJson  String           // JSON string detailing timestamps & actors handling ticket
+  rescueVehicleId     String?
+  rescueVehicle       Vehicle?         @relation("RescueVehicle", fields: [rescueVehicleId], references: [id])
+  status              IncidentStatus   @default(REPORTED)
+  resolutionNotes     String?
+  updatedAt           DateTime         @updatedAt
+}
+
+model FraudAlert {
+  id               String        @id @default(uuid())
+  tripId           String?
+  trip             Trip?         @relation(fields: [tripId], references: [id])
+  vehicleId        String
+  vehicle          Vehicle       @relation(fields: [vehicleId], references: [id])
+  driverId         String
+  driver           Driver        @relation(fields: [driverId], references: [id])
+  anomalyType      AnomalyType
+  severity         IncidentSeverity @default(HIGH)
+  details          String
+  expectedValue    String?
+  actualValue      String?
+  flaggedAt        DateTime      @default(now())
+  status           AnomalyStatus @default(PENDING_REVIEW)
+  reviewedByUserId String?
+  reviewedByUser   User?         @relation("FraudReviewer", fields: [reviewedByUserId], references: [id])
+  reviewNotes      String?
+  updatedAt        DateTime      @updatedAt
+}
+
+model AuditLog {
+  id          String   @id @default(uuid())
+  timestamp   DateTime @default(now())
+  userId      String
+  userRole    String
+  userEmail   String
+  action      String   // e.g. "CREATE", "UPDATE", "DECOMMISSION", "RESALE", "SYNC", "REROUTE"
+  entityName  String   // e.g. "Vehicle", "Trip", "ComplianceDoc", "Incident"
+  entityId    String
+  oldDataJson String?
+  newDataJson String?
+  ipAddress   String?
+  depotId     String?
+}
