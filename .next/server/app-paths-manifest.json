@@ -1,15 +1,11 @@
 {
-  "/compliance/page": "app/compliance/page.js",
-  "/trips/page": "app/trips/page.js",
-  "/incidents/page": "app/incidents/page.js",
-  "/api/incidents/route": "app/api/incidents/route.js",
-  "/fraud/page": "app/fraud/page.js",
-  "/api/compliance/route": "app/api/compliance/route.js",
-  "/settings/page": "app/settings/page.js",
   "/page": "app/page.js",
   "/vehicles/page": "app/vehicles/page.js",
+  "/trips/page": "app/trips/page.js",
   "/api/vehicles/route": "app/api/vehicles/route.js",
+  "/drivers/page": "app/drivers/page.js",
   "/api/trips/route": "app/api/trips/route.js",
-  "/api/fraud/route": "app/api/fraud/route.js",
-  "/drivers/page": "app/drivers/page.js"
+  "/maintenance/page": "app/maintenance/page.js",
+  "/api/compliance/route": "app/api/compliance/route.js",
+  "/compliance/page": "app/compliance/page.js"
 }

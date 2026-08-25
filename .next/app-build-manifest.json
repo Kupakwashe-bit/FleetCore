@@ -21,20 +21,25 @@
       "static/chunks/main-app.js",
       "static/chunks/app/drivers/page.js"
     ],
+    "/incidents/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/incidents/page.js"
+    ],
     "/compliance/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/compliance/page.js"
     ],
+    "/maintenance/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/maintenance/page.js"
+    ],
     "/trips/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/trips/page.js"
-    ],
-    "/incidents/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/incidents/page.js"
     ],
     "/fraud/page": [
       "static/chunks/webpack.js",
