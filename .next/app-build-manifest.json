@@ -21,40 +21,20 @@
       "static/chunks/main-app.js",
       "static/chunks/app/drivers/page.js"
     ],
-    "/incidents/page": [
+    "/trips/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/incidents/page.js"
-    ],
-    "/compliance/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/compliance/page.js"
+      "static/chunks/app/trips/page.js"
     ],
     "/maintenance/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/maintenance/page.js"
     ],
-    "/trips/page": [
+    "/compliance/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/trips/page.js"
-    ],
-    "/fraud/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/fraud/page.js"
-    ],
-    "/audit/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/audit/page.js"
-    ],
-    "/settings/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/settings/page.js"
+      "static/chunks/app/compliance/page.js"
     ]
   }
 }

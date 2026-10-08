@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import './globals.css';
 import { Navbar } from '@/components/Navbar';
 import { Sidebar } from '@/components/Sidebar';
+import { AuthProvider } from '@/components/AuthProvider';
 import { getOfflineQueue, processOfflineSync } from '@/lib/offline-sync';
 
 export default function RootLayout({
@@ -52,22 +53,24 @@ export default function RootLayout({
         <meta name="description" content="Production-grade Zimbabwean Fleet & Logistics Management System" />
       </head>
       <body className="min-h-screen bg-[#0b0f19] text-slate-100 flex flex-col">
-        <Navbar
-          currentRole={currentRole}
-          onRoleChange={setCurrentRole}
-          selectedDepot={selectedDepot}
-          onDepotChange={setSelectedDepot}
-          isOnline={isOnline}
-          pendingSyncCount={pendingSyncCount}
-          onManualSync={handleManualSync}
-        />
-        
-        <div className="flex flex-1 max-w-7xl w-full mx-auto">
-          <Sidebar currentRole={currentRole} />
-          <main className="flex-1 p-4 md:p-6 overflow-y-auto">
-            {children}
-          </main>
-        </div>
+        <AuthProvider>
+          <Navbar
+            currentRole={currentRole}
+            onRoleChange={setCurrentRole}
+            selectedDepot={selectedDepot}
+            onDepotChange={setSelectedDepot}
+            isOnline={isOnline}
+            pendingSyncCount={pendingSyncCount}
+            onManualSync={handleManualSync}
+          />
+          
+          <div className="flex flex-1 max-w-7xl w-full mx-auto">
+            <Sidebar currentRole={currentRole} />
+            <main className="flex-1 p-4 md:p-6 overflow-y-auto">
+              {children}
+            </main>
+          </div>
+        </AuthProvider>
       </body>
     </html>
   );

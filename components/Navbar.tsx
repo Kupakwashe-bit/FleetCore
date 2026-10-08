@@ -1,7 +1,9 @@
 'use client';
 
 import React from 'react';
-import { Truck, ShieldCheck, MapPin, User, RefreshCw, Radio } from 'lucide-react';
+import Link from 'next/link';
+import { useSession, signOut } from 'next-auth/react';
+import { Truck, ShieldCheck, MapPin, User, RefreshCw, Radio, LogIn, LogOut } from 'lucide-react';
 
 interface NavbarProps {
   currentRole: string;
@@ -22,11 +24,13 @@ export const Navbar: React.FC<NavbarProps> = ({
   pendingSyncCount,
   onManualSync,
 }) => {
+  const { data: session } = useSession();
+
   return (
     <header className="sticky top-0 z-40 w-full border-b border-slate-800 bg-[#0b0f19]/90 backdrop-blur-md px-4 py-3">
       <div className="flex flex-col md:flex-row items-center justify-between gap-3 max-w-7xl mx-auto">
         {/* Brand */}
-        <div className="flex items-center gap-3">
+        <Link href="/" className="flex items-center gap-3 hover:opacity-90 transition">
           <div className="h-10 w-10 rounded-xl bg-gradient-to-tr from-emerald-600 via-emerald-500 to-amber-500 flex items-center justify-center shadow-lg shadow-emerald-950/40">
             <Truck className="h-6 w-6 text-white" />
           </div>
@@ -39,7 +43,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             </div>
             <p className="text-xs text-slate-400">Integrated Zimbabwean Fleet & Logistics Single Source of Truth</p>
           </div>
-        </div>
+        </Link>
 
         {/* Operational Controls & Role Switcher */}
         <div className="flex items-center flex-wrap gap-3">
@@ -95,6 +99,30 @@ export const Navbar: React.FC<NavbarProps> = ({
               <option value="AUDITOR" className="bg-slate-900 text-white">Compliance Auditor</option>
             </select>
           </div>
+
+          {/* Auth Status & Login / Logout */}
+          {session?.user ? (
+            <div className="flex items-center gap-2 bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs">
+              <span className="text-emerald-400 font-semibold truncate max-w-[120px]">
+                {session.user.name || session.user.email}
+              </span>
+              <button
+                onClick={() => signOut({ callbackUrl: '/login' })}
+                title="Sign out"
+                className="text-slate-400 hover:text-red-400 transition"
+              >
+                <LogOut className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          ) : (
+            <Link
+              href="/login"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-500/30 text-xs font-semibold transition"
+            >
+              <LogIn className="h-3.5 w-3.5" />
+              <span>Login</span>
+            </Link>
+          )}
         </div>
       </div>
     </header>

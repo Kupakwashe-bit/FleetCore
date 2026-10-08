@@ -1,4 +1,4 @@
-// File: C:\Users\KupaDev23\Desktop\FleetCore\app\api\trips\route.ts
+// File: C:\Users\KupaDev23\Desktop\Software Projects\FleetCore\app\api\trips\route.ts
 import * as entry from '../../../../../app/api/trips/route.js'
 import type { NextRequest } from 'next/server.js'
 

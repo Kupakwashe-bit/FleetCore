@@ -1,4 +1,4 @@
-// File: C:\Users\KupaDev23\Desktop\FleetCore\app\layout.tsx
+// File: C:\Users\KupaDev23\Desktop\Software Projects\FleetCore\app\layout.tsx
 import * as entry from '../../../app/layout.js'
 import type { ResolvingMetadata, ResolvingViewport } from 'next/dist/lib/metadata/types/metadata-interface.js'
 

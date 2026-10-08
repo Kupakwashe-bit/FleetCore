@@ -1,11 +1,16 @@
 {
-  "/page": "app/page.js",
-  "/vehicles/page": "app/vehicles/page.js",
-  "/trips/page": "app/trips/page.js",
   "/api/vehicles/route": "app/api/vehicles/route.js",
+  "/page": "app/page.js",
+  "/api/auth/[...nextauth]/route": "app/api/auth/[...nextauth]/route.js",
+  "/api/drivers/route": "app/api/drivers/route.js",
+  "/vehicles/page": "app/vehicles/page.js",
+  "/api/depots/route": "app/api/depots/route.js",
+  "/trips/page": "app/trips/page.js",
   "/drivers/page": "app/drivers/page.js",
   "/api/trips/route": "app/api/trips/route.js",
   "/maintenance/page": "app/maintenance/page.js",
+  "/api/maintenance/route": "app/api/maintenance/route.js",
   "/api/compliance/route": "app/api/compliance/route.js",
-  "/compliance/page": "app/compliance/page.js"
+  "/compliance/page": "app/compliance/page.js",
+  "/api/dashboard/route": "app/api/dashboard/route.js"
 }
